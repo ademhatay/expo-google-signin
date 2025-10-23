@@ -1,50 +1,108 @@
 package expo.modules.googlesignin
 
+import android.app.Activity
+import androidx.credentials.CredentialManager
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.ClearCredentialStateRequest
+import androidx.credentials.CustomCredential
+import androidx.credentials.exceptions.GetCredentialException
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
-import java.net.URL
+import expo.modules.kotlin.Promise
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class ExpoGoogleSigninModule : Module() {
-  // Each module class must implement the definition function. The definition consists of components
-  // that describes the module's functionality and behavior.
-  // See https://docs.expo.dev/modules/module-api for more details about available components.
+
+  private var serverClientId: String? = null
+  private var filterByAuthorizedAccounts: Boolean = true
+  private var useSignInWithGoogleOption: Boolean = true
+
   override fun definition() = ModuleDefinition {
-    // Sets the name of the module that JavaScript code will use to refer to the module. Takes a string as an argument.
-    // Can be inferred from module's class name, but it's recommended to set it explicitly for clarity.
-    // The module will be accessible from `requireNativeModule('ExpoGoogleSignin')` in JavaScript.
-    Name("ExpoGoogleSignin")
+    Name("ExpoGoogleSignIn")
 
-    // Defines constant property on the module.
-    Constant("PI") {
-      Math.PI
+    AsyncFunction("configure") { config: Map<String, Any?> ->
+      serverClientId = (config["serverClientId"] as? String)?.ifBlank { null }
+        ?: throw IllegalArgumentException("serverClientId (Web OAuth client ID) is required")
+      filterByAuthorizedAccounts = (config["filterByAuthorizedAccounts"] as? Boolean) ?: true
+      useSignInWithGoogleOption = (config["useSignInWithGoogleOption"] as? Boolean) ?: true
     }
 
-    // Defines event names that the module can send to JavaScript.
-    Events("onChange")
+    AsyncFunction("signIn") { options: Map<String, Any?>, promise: Promise ->
+      val activity = requireActivity()
+      val cm = CredentialManager.create(activity)
 
-    // Defines a JavaScript synchronous function that runs the native code on the JavaScript thread.
-    Function("hello") {
-      "Hello world! 👋"
-    }
+      val nonce = options["nonce"] as? String
+      val requestVerifiedPhone = (options["requestVerifiedPhoneNumber"] as? Boolean) ?: false
+      val preferImmediate = (options["preferImmediatelyAvailableCredentials"] as? Boolean) ?: false
 
-    // Defines a JavaScript function that always returns a Promise and whose native code
-    // is by default dispatched on the different thread than the JavaScript runtime runs on.
-    AsyncFunction("setValueAsync") { value: String ->
-      // Send an event to JavaScript.
-      sendEvent("onChange", mapOf(
-        "value" to value
-      ))
-    }
-
-    // Enables the module to be used as a native view. Definition components that are accepted as part of
-    // the view definition: Prop, Events.
-    View(ExpoGoogleSigninView::class) {
-      // Defines a setter for the `url` prop.
-      Prop("url") { view: ExpoGoogleSigninView, url: URL ->
-        view.webView.loadUrl(url.toString())
+      val opt = if (useSignInWithGoogleOption) {
+        val b = GetSignInWithGoogleOption.Builder(serverClientId!!)
+        if (nonce != null) b.setNonce(nonce)
+        b.build()
+      } else {
+        val b = GetGoogleIdOption.Builder()
+          .setServerClientId(serverClientId!!)
+          .setFilterByAuthorizedAccounts(filterByAuthorizedAccounts)
+          .setRequestVerifiedPhoneNumber(requestVerifiedPhone)
+        if (nonce != null) b.setNonce(nonce)
+        b.build()
       }
-      // Defines an event that the view can send to JavaScript.
-      Events("onLoad")
+
+      val request = GetCredentialRequest.Builder()
+        .addCredentialOption(opt)
+        .setPreferImmediatelyAvailableCredentials(preferImmediate)
+        .build()
+
+      CoroutineScope(Dispatchers.Main).launch {
+        try {
+          val result = cm.getCredential(activity, request)
+          val cred = result.credential
+
+          if (cred is CustomCredential &&
+            cred.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
+          ) {
+            val g = GoogleIdTokenCredential.createFrom(cred.data)
+            val resultMap = mapOf(
+              "id" to g.id,
+              "idToken" to g.idToken,
+              "displayName" to g.displayName,
+              "givenName" to g.givenName,
+              "familyName" to g.familyName,
+              "profilePictureUrl" to (g.profilePictureUri?.toString()),
+              "phoneNumber" to g.phoneNumber
+            )
+            promise.resolve(resultMap)
+          } else {
+            promise.reject("UNEXPECTED_CREDENTIAL_TYPE", "Unexpected credential type: ${cred.type}", null)
+          }
+        } catch (e: GetCredentialException) {
+          promise.reject("GET_CREDENTIAL_ERROR", e.message, e)
+        }
+      }
     }
+
+    AsyncFunction("signOut") { promise: Promise ->
+      val activity = requireActivity()
+      val cm = CredentialManager.create(activity)
+
+      CoroutineScope(Dispatchers.Main).launch {
+        try {
+          cm.clearCredentialState(ClearCredentialStateRequest())
+          promise.resolve(null)
+        } catch (e: Exception) {
+          promise.reject("CLEAR_CREDENTIAL_ERROR", e.message, e)
+        }
+      }
+    }
+  }
+
+  private fun requireActivity(): Activity {
+    return appContext.activityProvider?.currentActivity
+      ?: throw IllegalStateException("No current Activity. Call from foreground.")
   }
 }

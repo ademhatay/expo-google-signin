@@ -1,12 +1,29 @@
 import { NativeModule, requireNativeModule } from 'expo';
 
-import { ExpoGoogleSigninModuleEvents } from './ExpoGoogleSignin.types';
+type Events = {};
 
-declare class ExpoGoogleSigninModule extends NativeModule<ExpoGoogleSigninModuleEvents> {
-  PI: number;
-  hello(): string;
-  setValueAsync(value: string): Promise<void>;
+declare class ExpoGoogleSignInModule extends NativeModule<Events> {
+  configure(config: {
+    serverClientId: string;
+    filterByAuthorizedAccounts?: boolean;
+    useSignInWithGoogleOption?: boolean;
+  }): Promise<void>;
+
+  signIn(options?: {
+    nonce?: string;
+    requestVerifiedPhoneNumber?: boolean;
+    preferImmediatelyAvailableCredentials?: boolean;
+  }): Promise<{
+    id: string;
+    idToken: string;
+    displayName?: string;
+    givenName?: string;
+    familyName?: string;
+    profilePictureUrl?: string;
+    phoneNumber?: string;
+  }>;
+
+  signOut(): Promise<void>;
 }
 
-// This call loads the native module object from the JSI.
-export default requireNativeModule<ExpoGoogleSigninModule>('ExpoGoogleSignin');
+export default requireNativeModule<ExpoGoogleSignInModule>('ExpoGoogleSignIn');

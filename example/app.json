@@ -14,7 +14,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "expo.modules.googlesignin.example"
+      "bundleIdentifier": "expo.modules.googlesignin.example31"
     },
     "android": {
       "adaptiveIcon": {
@@ -23,7 +23,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "expo.modules.googlesignin.example"
+      "package": "expo.modules.googlesignin.example31"
     },
     "web": {
       "favicon": "./assets/favicon.png"

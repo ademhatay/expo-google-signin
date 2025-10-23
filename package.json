@@ -1,5 +1,5 @@
 {
-  "name": "expo-google-signin",
+  "name": "@ademhatay/expo-google-signin",
   "version": "0.1.0",
   "description": "Google Credential Manager native modules for React Native Expo",
   "main": "build/index.js",
