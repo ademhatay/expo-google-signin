@@ -376,7 +376,7 @@ const user: GoogleUser = {
 
 Having issues? Check our comprehensive troubleshooting guide:
 
-**📖 [Troubleshooting Guide](https://www.google.com/search?q=docs/troubleshooting.md&authuser=1)** (You should create this file)
+**📖 [Troubleshooting Guide](https://github.com/ademhatay/expo-google-signin/blob/main/docs/troubleshooting.md)**
 
 **Common Quick Fixes:**
 
