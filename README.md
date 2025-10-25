@@ -1,175 +1,268 @@
 # @ademhatay/expo-google-signin
 
-**Android-only Expo Module** for Google Sign-In using **Credential Manager / One Tap**.
-No UI. Call functions → opens native sheet → returns **ID token + basic profile**.
+A modern Expo module for **Google Sign-In on Android**, built on top of Google's new **Credential Manager API**. This library unifies Google Sign-In, Password Manager, and Passkeys into a single native Android bottom sheet (One Tap).
 
-> iOS support planned next.
-
----
-
-## Install
-
-```bash
-# your app
-npm i @ademhatay/expo-google-signin
-# or: yarn add @ademhatay/expo-google-signin
-```
-
-This is a native module → if your app is managed, run:
-
-```bash
-npx expo prebuild -p android
-```
+⚠️ **Note:** Currently **Android-only**. iOS support is planned.
 
 ---
 
-## Android dependencies (auto)
+## Why this library?
 
-This package brings:
+Older libraries, like `@react-native-google-signin/google-signin`, rely on Google Play Services APIs that are now deprecated. This package is built for the future, using the modern `androidx.credentials` APIs, which are the standard on Android 14+ and the recommended path forward by Google.
 
-```gradle
-androidx.credentials:credentials:1.5.0
-androidx.credentials:credentials-play-services-auth:1.0.0-alpha01
-com.google.android.libraries.identity.googleid:googleid:1.1.1
-```
+- **Modern**: Uses the latest `androidx.credentials` API, not deprecated libraries.
+    
+- **Unified**: A single `signIn()` call handles Google Sign-In, Passkeys, and saved passwords via the native Android "One Tap" bottom sheet.
+    
+- **Simple**: No UI components required. The module triggers Android's native UI.
+    
+- **Lightweight**: A minimal, focused wrapper around the native Android APIs.
+    
 
-and adds `INTERNET` permission.
+This module is a lightweight wrapper around Android's `androidx.credentials.CredentialManager` and Google's `GetGoogleIdOption` / `GetSignInWithGoogleOption` APIs.
 
 ---
 
-## Google Cloud Setup (required)
+## Installation
 
-1. In **the same GCP project**, create an **OAuth 2.0 Client ID (Web application)**.
-   Copy the Client ID `xxxxx.apps.googleusercontent.com`.
-2. (Often required) Create **OAuth Client ID (Android)**:
+This package can be used in any React Native project (Expo or bare).
 
-   * Package name = your `applicationId` (see `android/app/build.gradle`)
-   * Debug SHA-1:
+### Expo (Managed Projects)
 
-     ```bash
-     keytool -list -v \
-       -keystore ~/.android/debug.keystore \
-       -alias androiddebugkey \
-       -storepass android -keypass android
-     ```
-   * For release build, add another Android client with your **App Signing SHA-1**.
-3. **OAuth consent screen**: In production (or add your Google account as Test user).
-4. Put the Web Client ID in an env var:
+This is the simplest way.
 
-   ```env
-   EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=xxxxx.apps.googleusercontent.com
-   ```
+Bash
+
+```
+npx expo install @ademhatay/expo-google-signin
+```
+
+After installing, you must create a new development build to include the native code:
+
+Bash
+
+```
+npx expo run:android
+# or
+eas build -p android --profile development
+```
+
+### Bare React Native / Expo (Bare Projects)
+
+You can use npm or yarn to install the package.
+
+Bash
+
+```
+# using npm
+npm install @ademhatay/expo-google-signin
+
+# using yarn
+yarn add @ademhatay/expo-google-signin
+```
+
+This package depends on `expo-modules-core`. If you're in a bare React Native project and don't have Expo modules set up, you'll need to install and configure it first. [Follow the Expo guide for installing in bare projects](https://docs.expo.dev/bare/installing-expo-modules/).
+
+After installation, rebuild your app to link the new native code:
+
+Bash
+
+```
+npx react-native run-android
+```
+
+### Required Android Dependencies
+
+This package automatically adds the following native dependencies to your Android build:
+
+- `androidx.credentials:credentials`
+    
+- `androidx.credentials:credentials-play-services-auth`
+    
+- `com.google.android.libraries.identity.googleid`
+    
+
+---
+
+## Google Cloud Setup (Required)
+
+You must configure Google Cloud correctly for this module to work.
+
+### Step 1. Create Web Client ID
+
+This is the **most important** part. You need a **Web application** Client ID, even for Android. This will be your `serverClientId`.
+
+1. Go to [Google Cloud Console – Credentials](https://console.cloud.google.com/apis/credentials?authuser=1).
+    
+2. Select your project.
+    
+3. Click **Create Credentials** → **OAuth client ID**.
+    
+4. Select **Web application** as the type.
+    
+5. Name it (e.g., "My App Web Client").
+    
+6. You do **not** need to fill in "Authorized JavaScript origins" or "Authorized redirect URIs".
+    
+7. Click **Create**.
+    
+8. Copy the generated **Client ID**. This is the `serverClientId` you will use in the `signIn()` function.
+    
+
+### Step 2. Create Android Client ID
+
+This client ID is used to verify your app's identity with Google.
+
+1. In the same [Credentials Console](https://console.cloud.google.com/apis/credentials?authuser=1), click **Create Credentials** → **OAuth client ID** again.
+    
+2. Select **Android** as the type.
+    
+3. Enter your app's **Package name** (must match `applicationId` in your `app/build.gradle` or `app.json`).
+    
+4. Enter your **SHA-1 certificate fingerprints**. This is critical and a common source of errors. You must add SHA-1 keys for all your build variants (debug, release, Google Play).
+    
+
+#### Getting Your SHA-1 Fingerprints
+
+**Method 1: Using Gradle (Recommended)** Run this command in your project's `/android` directory. It shows all build variants.
+
+Bash
+
+```
+cd android && ./gradlew signingReport
+```
+
+**Method 2: Using keytool (Debug key)**
+
+Bash
+
+```
+keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android
+```
+
+**Method 3: Using Expo CLI (Debug & Release)**
+
+Bash
+
+```
+npx expo credentials:manager -p android
+```
+
+You will get an output like `SHA1: A1:B2:C3:...`. Copy the **SHA1** value (not SHA256) and paste it into the Google Cloud Android Client ID form. Add multiple fingerprints as needed.
+
+5. Click **Create**. You don't need this Client ID in your code, but it _must_ exist in your project.
+    
+
+### Step 3. Configure Consent Screen
+
+Ensure your [OAuth Consent Screen](https://console.cloud.google.com/apis/credentials/consent?authuser=1) is set up. If it's in "Testing" mode, you must add your Google account email to the "Test users" list, or sign-in will fail.
 
 ---
 
 ## Usage
 
-```tsx
-import { useCallback, useEffect, useState } from 'react';
-import { Alert, Pressable, Text, View, StyleSheet, Image, ScrollView } from 'react-native';
-import { configure, signIn, signOut } from '@ademhatay/expo-google-signin';
+The Credential Manager API supports two main UI flows, both initiated by the `signIn()` function:
 
-interface GoogleUser {
-  id: string;
-  idToken: string;
-  displayName?: string;
-  givenName?: string;
-  familyName?: string;
-  profilePictureUrl?: string;
-  phoneNumber?: string;
+1. **One Tap (Bottom Sheet)**: (`signInButtonFlow: false`) This is the default. It slides up a bottom sheet showing all available credentials (Google, Passkeys, Passwords). It's best for general sign-in/sign-up pages.
+    
+2. **Google Button Flow**: (`signInButtonFlow: true`) This flow is _only_ for Google Accounts and shows a traditional modal. It should _only_ be called directly from a "Sign in with Google" button press, as per Google's guidelines.
+    
+
+### Example App
+
+This example shows how to trigger both flows.
+
+TypeScript
+
+```
+import React, { useState } from 'react';
+import { View, Text, Button, Alert, ScrollView, Image, StyleSheet } from 'react-native';
+import { signIn, signOut, GoogleUser } from '@ademhatay/expo-google-signin';
+
+// Your WEB Client ID from Google Cloud (Step 1)
+const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID!;
+
+if (!GOOGLE_WEB_CLIENT_ID) {
+  Alert.alert("Error", "Missing EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID in environment.");
 }
 
 export default function App() {
   const [user, setUser] = useState<GoogleUser | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    configure({
-      serverClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID!,
-      filterByAuthorizedAccounts: true,
-      useSignInWithGoogleOption: true,
-    });
-    console.log('WEB_CLIENT_ID=', process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID);
-  }, []);
-
-  const onLogin = useCallback(async () => {
-    setIsLoading(true);
+  const handleSignIn = async (flow: 'oneTap' | 'googleButton') => {
     try {
-      const userData = await signIn();
-      console.log('Google Sign-In Success - User Data:', JSON.stringify(userData, null, 2));
+      const userData = await signIn({
+        serverClientId: GOOGLE_WEB_CLIENT_ID,
+        filterByAuthorizedAccounts: false,
+        // Use 'true' for the classic Google button modal
+        // Use 'false' for the new One Tap bottom sheet
+        signInButtonFlow: flow === 'googleButton',
+      });
       setUser(userData);
-      Alert.alert('Welcome!', `Hello ${userData.displayName || userData.givenName || 'User'}!`);
+      Alert.alert('Sign-In Successful', `Welcome ${userData.displayName || 'User'}`);
     } catch (e: any) {
-      console.warn('Google sign-in failed', e?.message, e);
-      Alert.alert('Error', 'Google sign-in failed. Please try again.');
-    } finally {
-      setIsLoading(false);
+      // Handle known errors
+      if (e.code === 'USER_CANCELED') {
+        console.log('User canceled the sign-in flow');
+      } else if (e.code === 'NO_CREDENTIAL') {
+        console.log('No credentials found');
+        Alert.alert('No Credentials', 'No saved accounts found.');
+      } else {
+        // Handle other errors
+        console.error(e);
+        Alert.alert('Error', e.message || 'An unknown sign-in error occurred');
+      }
     }
-  }, []);
+  };
 
-  const onLogout = useCallback(async () => {
+  const handleSignOut = async () => {
     try {
       await signOut();
       setUser(null);
-      Alert.alert('Signed Out', 'You have been successfully signed out.');
+      Alert.alert('Signed Out', 'You have been signed out');
     } catch (e: any) {
-      console.warn('Sign out failed', e?.message, e);
+      Alert.alert('Error', e.message || 'Sign-out failed');
     }
-  }, []);
+  };
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>Google Credential Manager</Text>
-        <Text style={styles.subtitle}>Expo Google Sign-In Example</Text>
+      {user ? (
+        <ScrollView contentContainerStyle={styles.userInfoContainer}>
+          <Text style={styles.title}>
+            Signed in as {user.displayName || user.id}
+          </Text>
 
-        {user ? (
-          <View style={styles.userCard}>
-            <Text style={styles.welcomeText}>Welcome!</Text>
-            
-            {user.profilePictureUrl && (
-              <Image 
-                source={{ uri: user.profilePictureUrl }} 
-                style={styles.profileImage}
-              />
-            )}
-            
-            <View style={styles.userInfo}>
-              <Text style={styles.userName}>{user.displayName || 'Anonymous User'}</Text>
-              {user.givenName && (
-                <Text style={styles.userDetail}>First Name: {user.givenName}</Text>
-              )}
-              {user.familyName && (
-                <Text style={styles.userDetail}>Last Name: {user.familyName}</Text>
-              )}
-              <Text style={styles.userDetail}>ID: {user.id}</Text>
-              {user.phoneNumber && (
-                <Text style={styles.userDetail}>Phone: {user.phoneNumber}</Text>
-              )}
-            </View>
+          {user.profilePictureUrl && (
+            <Image
+              source={{ uri: user.profilePictureUrl }}
+              style={styles.profilePic}
+            />
+          )}
 
-            <Pressable onPress={onLogout} style={styles.logoutButton}>
-              <Text style={styles.logoutButtonText}>Sign Out</Text>
-            </Pressable>
+          <Text style={styles.infoText}>ID: {user.id}</Text>
+          <Text style={styles.infoText}>ID Token: {user.idToken.slice(0, 30)}...</Text>
+          {user.givenName && <Text style={styles.infoText}>First Name: {user.givenName}</Text>}
+          {user.familyName && <Text style={styles.infoText}>Last Name: {user.familyName}</Text>}
+          {user.phoneNumber && <Text style={styles.infoText}>Phone: {user.phoneNumber}</Text>}
+
+          <View style={styles.buttonContainer}>
+            <Button title="Sign Out" onPress={handleSignOut} />
           </View>
-        ) : (
-          <View style={styles.loginSection}>
-            <Text style={styles.loginText}>
-              Sign in with your Google account
-            </Text>
-            
-            <Pressable 
-              onPress={onLogin} 
-              style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
-              disabled={isLoading}
-            >
-              <Text style={styles.loginButtonText}>
-                {isLoading ? 'Signing in...' : 'Sign in with Google'}
-              </Text>
-            </Pressable>
-          </View>
-        )}
-      </ScrollView>
+        </ScrollView>
+      ) : (
+        <View style={styles.signInContainer}>
+          <Button 
+            title="Sign In with Google (Button Flow)" 
+            onPress={() => handleSignIn('googleButton')} 
+          />
+          <View style={{ height: 12 }} />
+          <Button 
+            title="Sign In with One-Tap (Bottom Sheet)" 
+            onPress={() => handleSignIn('oneTap')} 
+          />
+        </View>
+      )}
     </View>
   );
 }
@@ -177,156 +270,135 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  content: {
-    flexGrow: 1,
-    padding: 24,
     justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    paddingTop: 100,
+  },
+  signInContainer: {
+    width: 280,
+  },
+  userInfoContainer: {
+    alignItems: 'center',
+    paddingHorizontal: 16,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 8,
-    color: '#333',
-  },
-  subtitle: {
     fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 40,
-    color: '#666',
+    fontWeight: '600',
+    marginBottom: 8,
   },
-  userCard: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 24,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  welcomeText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#4285f4',
-    marginBottom: 16,
-  },
-  profileImage: {
+  profilePic: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    marginBottom: 16,
+    marginBottom: 12,
   },
-  userInfo: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  userName: {
-    fontSize: 20,
-    fontWeight: '600',
+  infoText: {
+    fontSize: 12,
     color: '#333',
-    marginBottom: 8,
+    maxWidth: '100%',
   },
-  userDetail: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 4,
-  },
-  logoutButton: {
-    backgroundColor: '#ea4335',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  logoutButtonText: {
-    color: 'white',
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  loginSection: {
-    alignItems: 'center',
-  },
-  loginText: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  loginButton: {
-    backgroundColor: '#4285f4',
-    paddingHorizontal: 32,
-    paddingVertical: 16,
-    borderRadius: 8,
-    minWidth: 200,
-  },
-  loginButtonDisabled: {
-    backgroundColor: '#ccc',
-  },
-  loginButtonText: {
-    color: 'white',
-    fontWeight: '600',
-    fontSize: 16,
-    textAlign: 'center',
+  buttonContainer: {
+    marginTop: 20,
   },
 });
 ```
 
-### API
+---
 
-```ts
-configure(options: {
-  serverClientId: string;                 // Web OAuth client ID
-  filterByAuthorizedAccounts?: boolean;   // default true
-  useSignInWithGoogleOption?: boolean;    // default true
-}): Promise<void>;
+## API Reference
 
-signIn(options?: {
-  nonce?: string;
-  requestVerifiedPhoneNumber?: boolean;   // default false
-  preferImmediatelyAvailableCredentials?: boolean; // opportunistic when true
-}): Promise<{
-  id: string;           // email
-  idToken: string;      // OIDC ID token
-  displayName?: string;
-  givenName?: string;
-  familyName?: string;
-  profilePictureUrl?: string;
-  phoneNumber?: string;
-}>;
+### `signIn(options: GoogleSignInOptions)`
 
-signOut(): Promise<void>; // also clear your app session
+Initiates a Google sign-in flow. Returns a `Promise` that resolves to a `GoogleUser` object.
+
+#### GoogleSignInOptions
+
+| Option | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| **`serverClientId`** | `string` | - | **Required.** Your server's **Web** OAuth 2.0 Client ID from Google Cloud Console. |
+| `nonce` | `string?` | `undefined` | Optional random string used to prevent replay attacks. |
+| `filterByAuthorizedAccounts` | `boolean` | `true` | If `true`, shows only accounts that have previously signed in to your app. |
+| `preferImmediatelyAvailableCredentials` | `boolean` | `false` | If `true`, attempts silent sign-in without UI. Fails with `NO_CREDENTIAL` if unavailable. |
+| `signInButtonFlow` | `boolean` | `false` | If `false`, uses One Tap bottom sheet. If `true`, uses Google Button modal flow. |
+
+**Example:**
+```tsx
+const userData = await signIn({
+  serverClientId: 'your-web-client-id.googleusercontent.com',
+  filterByAuthorizedAccounts: false,
+  signInButtonFlow: true,
+});
 ```
 
 ---
 
-## Server-side verification (recommended)
+### `signOut()`
 
-Verify the **ID token** with Google libraries. Check `iss`, `aud`, `exp`, and (if used) `nonce`.
+Clears the current credential state from Android Credential Manager. Returns a `Promise<void>`.
 
+**Example:**
+```tsx
+await signOut();
+```
+
+---
+
+### `GoogleUser` Interface
+
+The user object returned by a successful `signIn()` call.
+
+| Property | Type | Description |
+| :--- | :--- | :--- |
+| `id` | `string` | Unique Google account identifier. |
+| `idToken` | `string` | JWT token to send to your backend for verification. |
+| `displayName` | `string?` | User's full display name. |
+| `givenName` | `string?` | User's first name. |
+| `familyName` | `string?` | User's last name. |
+| `profilePictureUrl` | `string?` | URL of the user's profile picture. |
+| `phoneNumber` | `string?` | User's verified phone number (if requested and available). |
+
+**Example:**
+```tsx
+const user: GoogleUser = {
+  id: "123456789",
+  idToken: "eyJhbGciOiJSUzI1NiIs...",
+  displayName: "John Doe",
+  givenName: "John",
+  familyName: "Doe",
+  profilePictureUrl: "https://lh3.googleusercontent.com/...",
+  phoneNumber: "+1234567890"
+};
+```
 ---
 
 ## Troubleshooting
 
-* **Developer console is not set up correctly**
-  Add an **Android OAuth client** with your exact `applicationId` + **debug SHA-1** (and release SHA-1 later).
+Having issues? Check our comprehensive troubleshooting guide:
 
-* **NoCredentialException** immediately
-  You probably called with `preferImmediatelyAvailableCredentials=true` and no local credentials exist.
+**📖 [Troubleshooting Guide](https://www.google.com/search?q=docs/troubleshooting.md&authuser=1)** (You should create this file)
 
-* **No alert / no logs**
-  Ensure your `signIn()` Promise resolves—use console logs. If needed, upgrade to latest Google Play Services.
+**Common Quick Fixes:**
 
----
-
-## Roadmap
-
-* iOS (Sign in with Google via `googleid`), events, web-fallback.
+1. **Check SHA-1 Fingerprints:** This is the #1 cause of errors. Run `cd android && ./gradlew signingReport` and ensure **every** SHA-1 (debug, release, etc.) is in your Google Cloud Android Client ID (Step 2).
+    
+2. **Use WEB Client ID:** Make sure `serverClientId` in your code is the **Web** Client ID (Step 1), _not_ the Android Client ID.
+    
+3. **Check Consent Screen:** If your app is in "Testing" mode, is your Google account added to the "Test users" list?
+    
+4. **Google Account on Device:** The device or emulator must have a Google account added in Android settings.
+    
+5. **Rebuild the App:** After `npm install`, you must rebuild your native app (`npx expo run:android` or `npx react-native run-android`).
+    
 
 ---
 
 ## License
 
 MIT © Adem Hatay
+
+---
+
+## Contributing
+
+PRs and issues are welcome. Please ensure commits are clear and follow the project's coding style.

@@ -1,6 +1,6 @@
 {
   "name": "@ademhatay/expo-google-signin",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Google Credential Manager native modules for React Native Expo",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -18,8 +18,10 @@
   "keywords": [
     "react-native",
     "expo",
-    "expo-google-signin",
-    "ExpoGoogleSignin"
+    "google-signin",
+    "credential-manager",
+    "android",
+    "one-tap"
   ],
   "repository": "https://github.com/ademhatay/expo-google-signin",
   "bugs": {
@@ -28,7 +30,18 @@
   "author": "Adem Hatay <hatayadem5@gmail.com> (https://github.com/ademhatay)",
   "license": "MIT",
   "homepage": "https://github.com/ademhatay/expo-google-signin#readme",
-  "dependencies": {},
+  "files": [
+    "README.md",
+    "LICENSE",
+    "expo-module.config.json",
+    "build",
+    "src",
+    "android/build.gradle",
+    "android/src"
+  ],
+  "dependencies": {
+    "expo-modules-core": ">=1.13.0"
+  },
   "devDependencies": {
     "@types/react": "~19.1.0",
     "expo-module-scripts": "^5.0.7",

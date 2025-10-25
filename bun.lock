@@ -3,6 +3,9 @@
   "workspaces": {
     "": {
       "name": "expo-google-signin",
+      "dependencies": {
+        "expo-modules-core": ">=1.13.0",
+      },
       "devDependencies": {
         "@types/react": "~19.1.0",
         "expo": "^54.0.18",

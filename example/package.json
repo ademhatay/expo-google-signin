@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@ademhatay/expo-google-signin": "file:..",
+    "@react-native-async-storage/async-storage": "2.2.0",
     "expo": "~54.0.18",
     "react": "19.1.0",
     "react-native": "0.81.5",
