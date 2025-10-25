@@ -173,9 +173,7 @@ The Credential Manager API supports two main UI flows, both initiated by the `si
 
 This example shows how to trigger both flows.
 
-TypeScript
-
-```
+```TypeScript
 import React, { useState } from 'react';
 import { View, Text, Button, Alert, ScrollView, Image, StyleSheet } from 'react-native';
 import { signIn, signOut, GoogleUser } from '@ademhatay/expo-google-signin';
