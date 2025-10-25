@@ -8,18 +8,19 @@ A modern Expo module for **Google Sign-In on Android**, built on top of Google's
 
 ## Why this library?
 
-Older libraries, like `@react-native-google-signin/google-signin`, rely on Google Play Services APIs that are now deprecated. This package is built for the future, using the modern `androidx.credentials` APIs, which are the standard on Android 14+ and the recommended path forward by Google.
+This package is built for the modern Android ecosystem, using Google's latest and recommended authentication APIs. Unlike older solutions that rely on deprecated methods, this library embraces the future of Android authentication.
 
-- **Modern**: Uses the latest `androidx.credentials` API, not deprecated libraries.
+- **🚀 Modern & Fast**: Built on Google's latest `androidx.credentials` API - the current standard for Android 14+ and beyond.
     
-- **Unified**: A single `signIn()` call handles Google Sign-In, Passkeys, and saved passwords via the native Android "One Tap" bottom sheet.
+- **🆓 Free & Open Source**: Completely free to use with MIT license. No hidden costs or premium features.
     
-- **Simple**: No UI components required. The module triggers Android's native UI.
+- **⚡ Simple & Lightweight**: Just one `signIn()` call handles everything. No complex setup or heavy dependencies.
     
-- **Lightweight**: A minimal, focused wrapper around the native Android APIs.
+- **🎯 Native Experience**: Uses Android's built-in "One Tap" bottom sheet for the smoothest user experience.
     
+- **🔄 Future-Proof**: Built on Google's recommended authentication path, ensuring long-term compatibility.
 
-This module is a lightweight wrapper around Android's `androidx.credentials.CredentialManager` and Google's `GetGoogleIdOption` / `GetSignInWithGoogleOption` APIs.
+This library is a clean, efficient wrapper around Android's `androidx.credentials.CredentialManager` and Google's `GetGoogleIdOption` / `GetSignInWithGoogleOption` APIs - giving you the power of Google's latest tech with the simplicity you need.
 
 ---
 
