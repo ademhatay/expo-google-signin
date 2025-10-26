@@ -32,17 +32,16 @@ This package can be used in any React Native project (Expo or bare).
 
 This is the simplest way.
 
-Bash
 
-```
+
+```bash
 npx expo install @ademhatay/expo-google-signin
 ```
 
 After installing, you must create a new development build to include the native code:
 
-Bash
 
-```
+```bash
 npx expo run:android
 # or
 eas build -p android --profile development
@@ -52,9 +51,8 @@ eas build -p android --profile development
 
 You can use npm or yarn to install the package.
 
-Bash
 
-```
+```bash
 # using npm
 npm install @ademhatay/expo-google-signin
 
@@ -66,9 +64,7 @@ This package depends on `expo-modules-core`. If you're in a bare React Native pr
 
 After installation, rebuild your app to link the new native code:
 
-Bash
-
-```
+```bash
 npx react-native run-android
 ```
 
@@ -127,25 +123,23 @@ This client ID is used to verify your app's identity with Google.
 
 **Method 1: Using Gradle (Recommended)** Run this command in your project's `/android` directory. It shows all build variants.
 
-Bash
 
-```
+
+```bash
 cd android && ./gradlew signingReport
 ```
 
 **Method 2: Using keytool (Debug key)**
 
-Bash
 
-```
+```bash
 keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android
 ```
 
 **Method 3: Using Expo CLI (Debug & Release)**
 
-Bash
 
-```
+```bash
 npx expo credentials:manager -p android
 ```
 
