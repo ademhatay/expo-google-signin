@@ -107,9 +107,15 @@ npx expo run:ios
 
 You must create OAuth clients in the same Google Cloud project.
 
+- Google Cloud Console: [https://console.cloud.google.com/](https://console.cloud.google.com/)
+- Credentials page: [https://console.cloud.google.com/apis/credentials](https://console.cloud.google.com/apis/credentials)
+- OAuth consent screen: [https://console.cloud.google.com/apis/credentials/consent](https://console.cloud.google.com/apis/credentials/consent)
+
 ### 1) Create Web OAuth Client (Required for all platforms)
 
 Create `OAuth client ID` with type `Web application`.
+
+Direct link: [Create OAuth client](https://console.cloud.google.com/apis/credentials/oauthclient)
 
 Use this value as:
 
@@ -133,15 +139,20 @@ cd android
 
 Add all relevant SHA-1 values (debug/release/play signing if applicable).
 
+Google docs (Android + Credential Manager): [https://developers.google.com/identity/android-credential-manager](https://developers.google.com/identity/android-credential-manager)
+
 ### 3) Create iOS OAuth Client
 
 Create `OAuth client ID` with type `iOS` and enter:
 
 - Bundle identifier (must match your iOS app bundle ID)
 
+Google docs (iOS Sign-In): [https://developers.google.com/identity/sign-in/ios/start-integrating](https://developers.google.com/identity/sign-in/ios/start-integrating)
+
 ### 4) Configure OAuth Consent Screen
 
-If app is in `Testing`, add test user emails.
+If app is in `Testing`, add test user emails from the consent screen:
+[https://console.cloud.google.com/apis/credentials/consent](https://console.cloud.google.com/apis/credentials/consent)
 
 ### 5) Configure Expo plugin for iOS
 
