@@ -1,6 +1,9 @@
 {
   "name": "@ademhatay/expo-google-signin",
-  "platforms": ["android"],
+  "platforms": ["apple", "android"],
+  "apple": {
+    "modules": ["ExpoGoogleSigninModule"]
+  },
   "android": {
     "modules": ["expo.modules.googlesignin.ExpoGoogleSigninModule"]
   }

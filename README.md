@@ -1,8 +1,9 @@
 # @ademhatay/expo-google-signin
 
-A modern Expo module for **Google Sign-In on Android**, built on top of Google's new **Credential Manager API**. This library unifies Google Sign-In, Password Manager, and Passkeys into a single native Android bottom sheet (One Tap).
+A modern Expo module for **Google Sign-In on Android and iOS**.
 
-⚠️ **Note:** Currently **Android-only**. iOS support is planned.
+- On **Android**, it uses Credential Manager and Google Identity APIs.
+- On **iOS**, it uses the official `GoogleSignIn` SDK.
 
 ---
 
@@ -44,6 +45,8 @@ After installing, you must create a new development build to include the native 
 ```bash
 npx expo run:android
 # or
+npx expo run:ios
+# or
 eas build -p android --profile development
 ```
 
@@ -66,6 +69,8 @@ After installation, rebuild your app to link the new native code:
 
 ```bash
 npx react-native run-android
+# or
+npx react-native run-ios
 ```
 
 ### Required Android Dependencies
@@ -87,7 +92,7 @@ You must configure Google Cloud correctly for this module to work.
 
 ### Step 1. Create Web Client ID
 
-This is the **most important** part. You need a **Web application** Client ID, even for Android. This will be your `serverClientId`.
+This is the **most important** part. You need a **Web application** Client ID for both platforms. This will be your `serverClientId`.
 
 1. Go to [Google Cloud Console – Credentials](https://console.cloud.google.com/apis/credentials?authuser=1).
     
@@ -151,6 +156,34 @@ You will get an output like `SHA1: A1:B2:C3:...`. Copy the **SHA1** value (not S
 ### Step 3. Configure Consent Screen
 
 Ensure your [OAuth Consent Screen](https://console.cloud.google.com/apis/credentials/consent?authuser=1) is set up. If it's in "Testing" mode, you must add your Google account email to the "Test users" list, or sign-in will fail.
+
+### Step 4. Create iOS Client ID (Required for iOS)
+
+If you want iOS support, create an additional OAuth Client ID:
+
+1. In [Credentials Console](https://console.cloud.google.com/apis/credentials?authuser=1), click **Create Credentials** → **OAuth client ID**.
+2. Select **iOS** as the type.
+3. Enter your iOS **Bundle Identifier**.
+4. Copy the generated iOS client ID.
+
+Then configure the plugin in your app config:
+
+```json
+{
+  "expo": {
+    "plugins": [
+      [
+        "@ademhatay/expo-google-signin",
+        {
+          "iosClientId": "YOUR_IOS_CLIENT_ID.apps.googleusercontent.com"
+        }
+      ]
+    ]
+  }
+}
+```
+
+The plugin automatically writes `GIDClientID` and required URL scheme entries into iOS `Info.plist`.
 
 ---
 
@@ -310,6 +343,7 @@ Initiates a Google sign-in flow. Returns a `Promise` that resolves to a `GoogleU
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | **`serverClientId`** | `string` | - | **Required.** Your server's **Web** OAuth 2.0 Client ID from Google Cloud Console. |
+| `iosClientId` | `string?` | `undefined` | iOS OAuth client ID. If omitted, module reads `GIDClientID` from `Info.plist`. |
 | `nonce` | `string?` | `undefined` | Optional random string used to prevent replay attacks. |
 | `filterByAuthorizedAccounts` | `boolean` | `true` | If `true`, shows only accounts that have previously signed in to your app. |
 | `preferImmediatelyAvailableCredentials` | `boolean` | `false` | If `true`, attempts silent sign-in without UI. Fails with `NO_CREDENTIAL` if unavailable. |
@@ -319,6 +353,7 @@ Initiates a Google sign-in flow. Returns a `Promise` that resolves to a `GoogleU
 ```tsx
 const userData = await signIn({
   serverClientId: 'your-web-client-id.googleusercontent.com',
+  iosClientId: 'your-ios-client-id.googleusercontent.com',
   filterByAuthorizedAccounts: false,
   signInButtonFlow: true,
 });
@@ -328,7 +363,7 @@ const userData = await signIn({
 
 ### `signOut()`
 
-Clears the current credential state from Android Credential Manager. Returns a `Promise<void>`.
+Signs out the current user. Returns a `Promise<void>`.
 
 **Example:**
 ```tsx
@@ -382,6 +417,8 @@ Having issues? Check our comprehensive troubleshooting guide:
 4. **Google Account on Device:** The device or emulator must have a Google account added in Android settings.
     
 5. **Rebuild the App:** After `npm install`, you must rebuild your native app (`npx expo run:android` or `npx react-native run-android`).
+
+6. **iOS Client ID Configured:** For iOS, set `iosClientId` via config plugin or pass `iosClientId` directly in `signIn()` options.
     
 
 ---

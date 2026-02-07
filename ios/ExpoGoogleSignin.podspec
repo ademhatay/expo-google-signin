@@ -11,14 +11,14 @@ Pod::Spec.new do |s|
   s.author         = package['author']
   s.homepage       = package['homepage']
   s.platforms      = {
-    :ios => '15.1',
-    :tvos => '15.1'
+    :ios => '13.4'
   }
   s.swift_version  = '5.9'
   s.source         = { git: 'https://github.com/ademhatay/expo-google-signin' }
   s.static_framework = true
 
   s.dependency 'ExpoModulesCore'
+  s.dependency 'GoogleSignIn', '~> 7.1'
 
   # Swift/Objective-C compatibility
   s.pod_target_xcconfig = {

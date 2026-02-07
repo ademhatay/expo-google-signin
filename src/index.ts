@@ -37,6 +37,12 @@ export interface GoogleSignInOptions {
   serverClientId: string;
 
   /**
+   * iOS OAuth client ID.
+   * If omitted, the module will try to read `GIDClientID` from Info.plist.
+   */
+  iosClientId?: string;
+
+  /**
    * Optional nonce string used to prevent replay attacks.
    */
   nonce?: string;
