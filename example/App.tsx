@@ -2,7 +2,16 @@ import React, { useState } from 'react';
 import { View, Text, Button, Alert, ScrollView, Image } from 'react-native';
 import { signIn, signOut, GoogleUser } from '@ademhatay/expo-google-signin';
 
-const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID!;
+const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
+
+function getRequiredClientId() {
+  if (!GOOGLE_WEB_CLIENT_ID) {
+    throw new Error(
+      'Missing EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID. Add it to example/.env as your Web OAuth client ID.'
+    );
+  }
+  return GOOGLE_WEB_CLIENT_ID;
+}
 
 export default function App() {
   const [user, setUser] = useState<GoogleUser | null>(null);
@@ -11,7 +20,7 @@ export default function App() {
   const handleGoogleButtonSignIn = async () => {
     try {
       const userData = await signIn({
-        serverClientId: GOOGLE_WEB_CLIENT_ID,
+        serverClientId: getRequiredClientId(),
         filterByAuthorizedAccounts: false,
         signInButtonFlow: true, // Use Google branded button
       });
@@ -27,7 +36,7 @@ export default function App() {
   const handleOneTapSignIn = async () => {
     try {
       const userData = await signIn({
-        serverClientId: GOOGLE_WEB_CLIENT_ID,
+        serverClientId: getRequiredClientId(),
         filterByAuthorizedAccounts: false,
         signInButtonFlow: false, // Use One-Tap flow
       });
