@@ -1,172 +1,151 @@
-# @ademhatay/expo-google-signin
+<a id="readme-top"></a>
 
-A modern Expo module for **Google Sign-In on Android and iOS**.
+[![Contributors][contributors-shield]][contributors-url]
+[![Forks][forks-shield]][forks-url]
+[![Stargazers][stars-shield]][stars-url]
+[![Issues][issues-shield]][issues-url]
+[![MIT License][license-shield]][license-url]
 
-- On **Android**, it uses Credential Manager and Google Identity APIs.
-- On **iOS**, it uses the official `GoogleSignIn` SDK.
+<br />
+<div align="center">
+  <h3 align="center">@ademhatay/expo-google-signin</h3>
 
----
+  <p align="center">
+    Native Google Sign-In for Expo / React Native on Android and iOS.
+    <br />
+    Android: Credential Manager (One Tap + Google button flow)
+    <br />
+    iOS: GoogleSignIn native SDK
+    <br />
+    <a href="https://github.com/ademhatay/expo-google-signin"><strong>Explore the docs »</strong></a>
+    <br />
+    <br />
+    <a href="https://github.com/ademhatay/expo-google-signin/issues/new?labels=bug">Report Bug</a>
+    ·
+    <a href="https://github.com/ademhatay/expo-google-signin/issues/new?labels=enhancement">Request Feature</a>
+  </p>
+</div>
 
-## Why this library?
+<details>
+  <summary>Table of Contents</summary>
+  <ol>
+    <li>
+      <a href="#about-the-project">About The Project</a>
+      <ul>
+        <li><a href="#built-with">Built With</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="#getting-started">Getting Started</a>
+      <ul>
+        <li><a href="#prerequisites">Prerequisites</a></li>
+        <li><a href="#installation">Installation</a></li>
+      </ul>
+    </li>
+    <li><a href="#google-cloud-setup-required">Google Cloud Setup (Required)</a></li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#api-reference">API Reference</a></li>
+    <li><a href="#troubleshooting">Troubleshooting</a></li>
+    <li><a href="#contributing">Contributing</a></li>
+    <li><a href="#license">License</a></li>
+  </ol>
+</details>
 
-This package is built for the modern Android ecosystem, using Google's latest and recommended authentication APIs. Unlike older solutions that rely on deprecated methods, this library embraces the future of Android authentication.
+## About The Project
 
-- **🚀 Modern & Fast**: Built on Google's latest `androidx.credentials` API - the current standard for Android 14+ and beyond.
-    
-- **🆓 Free & Open Source**: Completely free to use with MIT license. No hidden costs or premium features.
-    
-- **⚡ Simple & Lightweight**: Just one `signIn()` call handles everything. No complex setup or heavy dependencies.
-    
-- **🎯 Native Experience**: Uses Android's built-in "One Tap" bottom sheet for the smoothest user experience.
-    
-- **🔄 Future-Proof**: Built on Google's recommended authentication path, ensuring long-term compatibility.
+`@ademhatay/expo-google-signin` provides a single JS API (`signIn`, `signOut`) and native implementations for both platforms:
 
-This library is a clean, efficient wrapper around Android's `androidx.credentials.CredentialManager` and Google's `GetGoogleIdOption` / `GetSignInWithGoogleOption` APIs - giving you the power of Google's latest tech with the simplicity you need.
+- Android: modern Credential Manager flow (`One Tap` and explicit `Google button flow`)
+- iOS: official `GoogleSignIn` native SDK
 
----
+This lets you keep one auth integration across platforms while still using platform-native UX.
 
-## Installation
+### Built With
 
-This package can be used in any React Native project (Expo or bare).
+- [Expo Modules](https://docs.expo.dev/modules/overview/)
+- [React Native](https://reactnative.dev/)
+- [AndroidX Credential Manager](https://developer.android.com/identity/sign-in/credential-manager)
+- [Google Identity Services for Android](https://developers.google.com/identity/android-credential-manager)
+- [GoogleSignIn iOS SDK](https://developers.google.com/identity/sign-in/ios)
 
-### Expo (Managed Projects)
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-This is the simplest way.
+## Getting Started
 
+### Prerequisites
 
+- Node.js LTS (`20` or `22` recommended)
+- Expo SDK / React Native project
+- Google Cloud project
+
+### Installation
+
+Expo managed or prebuild:
 
 ```bash
 npx expo install @ademhatay/expo-google-signin
 ```
 
-After installing, you must create a new development build to include the native code:
+Bare React Native / Expo bare:
 
+```bash
+npm install @ademhatay/expo-google-signin
+# or
+bun add @ademhatay/expo-google-signin
+```
+
+Rebuild native apps after install:
 
 ```bash
 npx expo run:android
-# or
 npx expo run:ios
-# or
-eas build -p android --profile development
 ```
 
-### Bare React Native / Expo (Bare Projects)
-
-You can use npm or yarn to install the package.
-
-
-```bash
-# using npm
-npm install @ademhatay/expo-google-signin
-
-# using yarn
-yarn add @ademhatay/expo-google-signin
-```
-
-This package depends on `expo-modules-core`. If you're in a bare React Native project and don't have Expo modules set up, you'll need to install and configure it first. [Follow the Expo guide for installing in bare projects](https://docs.expo.dev/bare/installing-expo-modules/).
-
-After installation, rebuild your app to link the new native code:
-
-```bash
-npx react-native run-android
-# or
-npx react-native run-ios
-```
-
-### Required Android Dependencies
-
-This package automatically adds the following native dependencies to your Android build:
-
-- `androidx.credentials:credentials`
-    
-- `androidx.credentials:credentials-play-services-auth`
-    
-- `com.google.android.libraries.identity.googleid`
-    
-
----
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Google Cloud Setup (Required)
 
-You must configure Google Cloud correctly for this module to work.
+You must create OAuth clients in the same Google Cloud project.
 
-### Step 1. Create Web Client ID
+### 1) Create Web OAuth Client (Required for all platforms)
 
-This is the **most important** part. You need a **Web application** Client ID for both platforms. This will be your `serverClientId`.
+Create `OAuth client ID` with type `Web application`.
 
-1. Go to [Google Cloud Console – Credentials](https://console.cloud.google.com/apis/credentials?authuser=1).
-    
-2. Select your project.
-    
-3. Click **Create Credentials** → **OAuth client ID**.
-    
-4. Select **Web application** as the type.
-    
-5. Name it (e.g., "My App Web Client").
-    
-6. You do **not** need to fill in "Authorized JavaScript origins" or "Authorized redirect URIs".
-    
-7. Click **Create**.
-    
-8. Copy the generated **Client ID**. This is the `serverClientId` you will use in the `signIn()` function.
-    
+Use this value as:
 
-### Step 2. Create Android Client ID
+- `serverClientId` in `signIn(options)`
 
-This client ID is used to verify your app's identity with Google.
+Important: `serverClientId` must be **Web Client ID**, not Android/iOS client ID.
 
-1. In the same [Credentials Console](https://console.cloud.google.com/apis/credentials?authuser=1), click **Create Credentials** → **OAuth client ID** again.
-    
-2. Select **Android** as the type.
-    
-3. Enter your app's **Package name** (must match `applicationId` in your `app/build.gradle` or `app.json`).
-    
-4. Enter your **SHA-1 certificate fingerprints**. This is critical and a common source of errors. You must add SHA-1 keys for all your build variants (debug, release, Google Play).
-    
+### 2) Create Android OAuth Client
 
-#### Getting Your SHA-1 Fingerprints
+Create `OAuth client ID` with type `Android` and enter:
 
-**Method 1: Using Gradle (Recommended)** Run this command in your project's `/android` directory. It shows all build variants.
+- Package name (exactly your Android app package)
+- SHA-1 certificate fingerprint(s)
 
-
+Get SHA-1:
 
 ```bash
-cd android && ./gradlew signingReport
+cd android
+./gradlew signingReport
 ```
 
-**Method 2: Using keytool (Debug key)**
+Add all relevant SHA-1 values (debug/release/play signing if applicable).
 
+### 3) Create iOS OAuth Client
 
-```bash
-keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android
-```
+Create `OAuth client ID` with type `iOS` and enter:
 
-**Method 3: Using Expo CLI (Debug & Release)**
+- Bundle identifier (must match your iOS app bundle ID)
 
+### 4) Configure OAuth Consent Screen
 
-```bash
-npx expo credentials:manager -p android
-```
+If app is in `Testing`, add test user emails.
 
-You will get an output like `SHA1: A1:B2:C3:...`. Copy the **SHA1** value (not SHA256) and paste it into the Google Cloud Android Client ID form. Add multiple fingerprints as needed.
+### 5) Configure Expo plugin for iOS
 
-5. Click **Create**. You don't need this Client ID in your code, but it _must_ exist in your project.
-    
-
-### Step 3. Configure Consent Screen
-
-Ensure your [OAuth Consent Screen](https://console.cloud.google.com/apis/credentials/consent?authuser=1) is set up. If it's in "Testing" mode, you must add your Google account email to the "Test users" list, or sign-in will fail.
-
-### Step 4. Create iOS Client ID (Required for iOS)
-
-If you want iOS support, create an additional OAuth Client ID:
-
-1. In [Credentials Console](https://console.cloud.google.com/apis/credentials?authuser=1), click **Create Credentials** → **OAuth client ID**.
-2. Select **iOS** as the type.
-3. Enter your iOS **Bundle Identifier**.
-4. Copy the generated iOS client ID.
-
-Then configure the plugin in your app config:
+In your app config (`app.json` or `app.config.ts`), add plugin with iOS client ID:
 
 ```json
 {
@@ -183,252 +162,131 @@ Then configure the plugin in your app config:
 }
 ```
 
-The plugin automatically writes `GIDClientID` and required URL scheme entries into iOS `Info.plist`.
+This writes `GIDClientID` and required URL scheme into Info.plist during prebuild.
 
----
+Then rebuild iOS native project.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Usage
 
-The Credential Manager API supports two main UI flows, both initiated by the `signIn()` function:
+```ts
+import { signIn, signOut } from '@ademhatay/expo-google-signin';
 
-1. **One Tap (Bottom Sheet)**: (`signInButtonFlow: false`) This is the default. It slides up a bottom sheet showing all available credentials (Google, Passkeys, Passwords). It's best for general sign-in/sign-up pages.
-    
-2. **Google Button Flow**: (`signInButtonFlow: true`) This flow is _only_ for Google Accounts and shows a traditional modal. It should _only_ be called directly from a "Sign in with Google" button press, as per Google's guidelines.
-    
+const user = await signIn({
+  serverClientId: 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com',
+  // Optional on iOS if plugin already set GIDClientID
+  iosClientId: 'YOUR_IOS_CLIENT_ID.apps.googleusercontent.com',
 
-### Example App
-
-This example shows how to trigger both flows.
-
-```TypeScript
-import React, { useState } from 'react';
-import { View, Text, Button, Alert, ScrollView, Image, StyleSheet } from 'react-native';
-import { signIn, signOut, GoogleUser } from '@ademhatay/expo-google-signin';
-
-// Your WEB Client ID from Google Cloud (Step 1)
-const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID!;
-
-if (!GOOGLE_WEB_CLIENT_ID) {
-  Alert.alert("Error", "Missing EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID in environment.");
-}
-
-export default function App() {
-  const [user, setUser] = useState<GoogleUser | null>(null);
-
-  const handleSignIn = async (flow: 'oneTap' | 'googleButton') => {
-    try {
-      const userData = await signIn({
-        serverClientId: GOOGLE_WEB_CLIENT_ID,
-        filterByAuthorizedAccounts: false,
-        // Use 'true' for the classic Google button modal
-        // Use 'false' for the new One Tap bottom sheet
-        signInButtonFlow: flow === 'googleButton',
-      });
-      setUser(userData);
-      Alert.alert('Sign-In Successful', `Welcome ${userData.displayName || 'User'}`);
-    } catch (e: any) {
-      // Handle known errors
-      if (e.code === 'USER_CANCELED') {
-        console.log('User canceled the sign-in flow');
-      } else if (e.code === 'NO_CREDENTIAL') {
-        console.log('No credentials found');
-        Alert.alert('No Credentials', 'No saved accounts found.');
-      } else {
-        // Handle other errors
-        console.error(e);
-        Alert.alert('Error', e.message || 'An unknown sign-in error occurred');
-      }
-    }
-  };
-
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      setUser(null);
-      Alert.alert('Signed Out', 'You have been signed out');
-    } catch (e: any) {
-      Alert.alert('Error', e.message || 'Sign-out failed');
-    }
-  };
-
-  return (
-    <View style={styles.container}>
-      {user ? (
-        <ScrollView contentContainerStyle={styles.userInfoContainer}>
-          <Text style={styles.title}>
-            Signed in as {user.displayName || user.id}
-          </Text>
-
-          {user.profilePictureUrl && (
-            <Image
-              source={{ uri: user.profilePictureUrl }}
-              style={styles.profilePic}
-            />
-          )}
-
-          <Text style={styles.infoText}>ID: {user.id}</Text>
-          <Text style={styles.infoText}>ID Token: {user.idToken.slice(0, 30)}...</Text>
-          {user.givenName && <Text style={styles.infoText}>First Name: {user.givenName}</Text>}
-          {user.familyName && <Text style={styles.infoText}>Last Name: {user.familyName}</Text>}
-          {user.phoneNumber && <Text style={styles.infoText}>Phone: {user.phoneNumber}</Text>}
-
-          <View style={styles.buttonContainer}>
-            <Button title="Sign Out" onPress={handleSignOut} />
-          </View>
-        </ScrollView>
-      ) : (
-        <View style={styles.signInContainer}>
-          <Button 
-            title="Sign In with Google (Button Flow)" 
-            onPress={() => handleSignIn('googleButton')} 
-          />
-          <View style={{ height: 12 }} />
-          <Button 
-            title="Sign In with One-Tap (Bottom Sheet)" 
-            onPress={() => handleSignIn('oneTap')} 
-          />
-        </View>
-      )}
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    paddingTop: 100,
-  },
-  signInContainer: {
-    width: 280,
-  },
-  userInfoContainer: {
-    alignItems: 'center',
-    paddingHorizontal: 16,
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  profilePic: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    marginBottom: 12,
-  },
-  infoText: {
-    fontSize: 12,
-    color: '#333',
-    maxWidth: '100%',
-  },
-  buttonContainer: {
-    marginTop: 20,
-  },
-});
-```
-
----
-
-## API Reference
-
-### `signIn(options: GoogleSignInOptions)`
-
-Initiates a Google sign-in flow. Returns a `Promise` that resolves to a `GoogleUser` object.
-
-#### GoogleSignInOptions
-
-| Option | Type | Default | Description |
-| :--- | :--- | :--- | :--- |
-| **`serverClientId`** | `string` | - | **Required.** Your server's **Web** OAuth 2.0 Client ID from Google Cloud Console. |
-| `iosClientId` | `string?` | `undefined` | iOS OAuth client ID. If omitted, module reads `GIDClientID` from `Info.plist`. |
-| `nonce` | `string?` | `undefined` | Optional random string used to prevent replay attacks. |
-| `filterByAuthorizedAccounts` | `boolean` | `true` | If `true`, shows only accounts that have previously signed in to your app. |
-| `preferImmediatelyAvailableCredentials` | `boolean` | `false` | If `true`, attempts silent sign-in without UI. Fails with `NO_CREDENTIAL` if unavailable. |
-| `signInButtonFlow` | `boolean` | `false` | If `false`, uses One Tap bottom sheet. If `true`, uses Google Button modal flow. |
-
-**Example:**
-```tsx
-const userData = await signIn({
-  serverClientId: 'your-web-client-id.googleusercontent.com',
-  iosClientId: 'your-ios-client-id.googleusercontent.com',
+  // Android options (ignored on iOS):
+  signInButtonFlow: false,
   filterByAuthorizedAccounts: false,
-  signInButtonFlow: true,
+  preferImmediatelyAvailableCredentials: false,
 });
-```
 
----
+console.log(user.idToken);
 
-### `signOut()`
-
-Signs out the current user. Returns a `Promise<void>`.
-
-**Example:**
-```tsx
 await signOut();
 ```
 
----
+### Example env variables
 
-### `GoogleUser` Interface
-
-The user object returned by a successful `signIn()` call.
-
-| Property | Type | Description |
-| :--- | :--- | :--- |
-| `id` | `string` | Unique Google account identifier. |
-| `idToken` | `string` | JWT token to send to your backend for verification. |
-| `displayName` | `string?` | User's full display name. |
-| `givenName` | `string?` | User's first name. |
-| `familyName` | `string?` | User's last name. |
-| `profilePictureUrl` | `string?` | URL of the user's profile picture. |
-| `phoneNumber` | `string?` | User's verified phone number (if requested and available). |
-
-**Example:**
-```tsx
-const user: GoogleUser = {
-  id: "123456789",
-  idToken: "eyJhbGciOiJSUzI1NiIs...",
-  displayName: "John Doe",
-  givenName: "John",
-  familyName: "Doe",
-  profilePictureUrl: "https://lh3.googleusercontent.com/...",
-  phoneNumber: "+1234567890"
-};
+```env
+EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=YOUR_WEB_CLIENT_ID.apps.googleusercontent.com
+EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID=YOUR_IOS_CLIENT_ID.apps.googleusercontent.com
 ```
----
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## API Reference
+
+### `signIn(options: GoogleSignInOptions): Promise<GoogleUser>`
+
+#### `GoogleSignInOptions`
+
+- `serverClientId: string` (required)
+  - Web OAuth client ID from Google Cloud.
+- `iosClientId?: string`
+  - iOS OAuth client ID. Optional if plugin sets `GIDClientID` in Info.plist.
+- `nonce?: string`
+  - Optional nonce.
+- `filterByAuthorizedAccounts?: boolean` (Android)
+- `preferImmediatelyAvailableCredentials?: boolean` (Android)
+- `signInButtonFlow?: boolean` (Android)
+
+#### Returns `GoogleUser`
+
+- `id: string`
+- `idToken: string`
+- `displayName?: string`
+- `givenName?: string`
+- `familyName?: string`
+- `profilePictureUrl?: string`
+- `phoneNumber?: string`
+
+### `signOut(): Promise<void>`
+
+- Android: clears credential manager state.
+- iOS: signs out current Google user.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Troubleshooting
 
-Having issues? Check our comprehensive troubleshooting guide:
+### `serverClientId is required`
 
-**📖 [Troubleshooting Guide](https://github.com/ademhatay/expo-google-signin/blob/main/docs/troubleshooting.md)**
+- Ensure Web client ID is passed.
+- Ensure env is loaded correctly.
 
-**Common Quick Fixes:**
+### `Developer console is not set up correctly` / `DEVELOPER_ERROR`
 
-1. **Check SHA-1 Fingerprints:** This is the #1 cause of errors. Run `cd android && ./gradlew signingReport` and ensure **every** SHA-1 (debug, release, etc.) is in your Google Cloud Android Client ID (Step 2).
-    
-2. **Use WEB Client ID:** Make sure `serverClientId` in your code is the **Web** Client ID (Step 1), _not_ the Android Client ID.
-    
-3. **Check Consent Screen:** If your app is in "Testing" mode, is your Google account added to the "Test users" list?
-    
-4. **Google Account on Device:** The device or emulator must have a Google account added in Android settings.
-    
-5. **Rebuild the App:** After `npm install`, you must rebuild your native app (`npx expo run:android` or `npx react-native run-android`).
+- Android package name mismatch.
+- SHA-1 missing or wrong.
+- Wrong client ID type used in `serverClientId`.
 
-6. **iOS Client ID Configured:** For iOS, set `iosClientId` via config plugin or pass `iosClientId` directly in `signIn()` options.
-    
+### `iosClientId is required for iOS`
 
----
+- Add iOS client ID via plugin config or pass `iosClientId` in `signIn` options.
+
+### iOS build fails with Expo config/plugin errors
+
+- Use Node LTS (`20` or `22`), avoid Node `25`.
+- Reinstall pods and rebuild:
+
+```bash
+cd ios
+pod install
+```
+
+### iOS build succeeds but sign-in fails
+
+- Verify bundle identifier exactly matches iOS OAuth client.
+- Verify OAuth consent screen test users.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Contributing
+
+PRs and issues are welcome.
+
+1. Fork the project
+2. Create branch
+3. Commit changes
+4. Push branch
+5. Open PR
 
 ## License
 
 MIT © Adem Hatay
 
----
-
-## Contributing
-
-PRs and issues are welcome. Please ensure commits are clear and follow the project's coding style.
+<!-- MARKDOWN LINKS & IMAGES -->
+[contributors-shield]: https://img.shields.io/github/contributors/ademhatay/expo-google-signin.svg?style=for-the-badge
+[contributors-url]: https://github.com/ademhatay/expo-google-signin/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/ademhatay/expo-google-signin.svg?style=for-the-badge
+[forks-url]: https://github.com/ademhatay/expo-google-signin/network/members
+[stars-shield]: https://img.shields.io/github/stars/ademhatay/expo-google-signin.svg?style=for-the-badge
+[stars-url]: https://github.com/ademhatay/expo-google-signin/stargazers
+[issues-shield]: https://img.shields.io/github/issues/ademhatay/expo-google-signin.svg?style=for-the-badge
+[issues-url]: https://github.com/ademhatay/expo-google-signin/issues
+[license-shield]: https://img.shields.io/github/license/ademhatay/expo-google-signin.svg?style=for-the-badge
+[license-url]: https://github.com/ademhatay/expo-google-signin/blob/main/LICENSE
